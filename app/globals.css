@@ -1,0 +1,513 @@
+/* ===============================
+   Custom CSS variables & theme
+=============================== */
+:root {
+  --accent: #4FC3F7;       /* bright blue accent */
+  --bg: #0A1F44;           /* dark blue background */
+  --card: #142B55;         /* card background */
+  --muted: #B0BEC5;        /* muted text */
+  --text: #ffffff;
+  --header-bg: #0F2A5B;
+  --footer-bg: #0F2A5B;
+}
+
+/* ===============================
+   Page-Wide Custom Scrollbar
+=============================== */
+
+/* For Webkit browsers (Chrome, Safari, Edge) */
+html::-webkit-scrollbar {
+  width: 12px; /* Vertical scrollbar width */
+}
+
+html::-webkit-scrollbar-track {
+  background: #00f0ff; /* #0F2A5B - Dark blue track */
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+html::-webkit-scrollbar-thumb {
+  background: #00f0ff; /* #4FC3F7 - Bright blue thumb */
+  border-radius: 6px;
+  border: 2px solid var(--header-bg);
+  transition: background-color 0.2s ease;
+}
+
+html::-webkit-scrollbar-thumb:hover {
+  background: #000000; /* Lighter blue on hover */
+  box-shadow: 0 0 4px rgba(79, 195, 247, 0.5);
+}
+
+html::-webkit-scrollbar-corner {
+  background: #00f0ff #00f0ff; /* Match corner to track */
+}
+
+/* For Firefox */
+html {
+  scrollbar-width: thin; /* Options: auto, thin, none */
+  scrollbar-color: #00f0ff #141313; /* thumb track */
+}
+
+/* Optional: Smooth scrolling for the entire page */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ===============================
+   Global layout
+=============================== */
+html, body, #__next {
+  margin: 0;
+  padding: 0;
+  font-family: Inter, sans-serif;
+  background: #0c0f17;
+  color: var(--text);
+  width: 100%;
+  overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+/* Links */
+a {
+  color: rgb(255, 255, 255);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+a:hover {
+  color: var(--accent);
+}
+
+/* Headers */
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+}
+
+/* ===============================
+   Header
+=============================== */
+header {
+  background-color: var(--header-bg);
+  border-bottom: 1px solid #222;
+  padding: 1rem 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+header h1 {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: var(--accent);
+}
+header nav a {
+  margin-left: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.text-head {
+  font-size: 2.5rem;
+  margin: 2rem 0 1.5rem 4rem;
+  color: #fff;
+}
+
+/* ===============================
+   Main content
+=============================== */
+.main-content {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.main-content-wrapper {
+overflow: auto;
+}
+
+/* ===============================
+   Footer
+=============================== */
+footer {
+  background-color: #0e131b; /* dark background */
+  border-top: 1px solid #222;
+  border-radius: 15px;
+  padding: 2rem 1rem 2rem; /* adjust bottom padding */
+  width: 100%;
+  text-align: center;
+  color: #aaa; /* muted text */
+  font-family: "Inter", sans-serif;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.footer-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #ffffff; /* light cyan-blue */
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #ffffff; /* accent red */
+    text-shadow:
+    0 0 2px #a0eaff,
+    0 0 2px #00bfff,
+    0 0 5px #00bfff,
+    0 0 15px #00f0ff,
+    0 0 20px #00f0ff;
+
+  margin-bottom: 0.5rem;
+}
+
+.footer-text {
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.footer-disclaimer {
+  font-size: 0.85rem;
+  color: #777;
+  margin-top: 0.5rem;
+  line-height: 1.4;
+}
+
+/* ===============================
+   Full Width Layout
+=============================== */
+
+.main-content-wrapper {
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+  overflow: visible;
+}
+
+/* ===============================
+   Hero Section with Vignette
+=============================== */
+.hero-section {
+  position: relative;
+  height: 80vh;
+  min-height: 500px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  margin-bottom: -90px;
+}
+
+.hero-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 1;
+}
+
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.9) 0%,
+    rgba(0, 0, 0, 0.6) 50%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+  z-index: 2;
+}
+
+/* Add vignette effect */
+.hero-vignette {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  /* Radial gradient for vignette effect */
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.2) 40%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+  /* Optional: Add a subtle inner shadow for more depth */
+  box-shadow: inset 0 0 150px rgba(0, 0, 0, 0.8);
+}
+
+.hero-content {
+  position: relative;
+  z-index: 4; /* Increased z-index to appear above vignette */
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  width: 100%;
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+  max-width: 600px;
+}
+
+.hero-description {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  max-width: 600px;
+  line-height: 1.5;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  color: #f0f0f0;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.hero-play-btn {
+  background-color: white;
+  color: black;
+  padding: 0.8rem 2rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.hero-play-btn:hover {
+  background-color: rgba(255, 255, 255, 0.85);
+  transform: scale(1.05);
+}
+
+.hero-info-btn {
+  background-color: rgba(109, 109, 110, 0.7);
+  color: white;
+  padding: 0.8rem 2rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hero-info-btn:hover {
+  background-color: rgba(109, 109, 110, 0.5);
+}
+
+/* ===============================
+   Carousel Sections & Buttons
+=============================== */
+.carousel-section {
+  position: relative;
+  margin: 3rem 0;
+  padding: 0 2rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.section-title {
+  font-size: 1.4rem;
+  position: relative;
+  margin: 0 0 0.2rem 1rem;
+  color: #fff;
+  font-weight: 600;
+  z-index: 999999 !important;
+}
+
+.carousel-wrapper {
+  position: relative;
+}
+
+/* Carousel button styles */
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  font-size: 1.2rem;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+  z-index: 99999;
+}
+
+.carousel-btn:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.left-btn {
+  left: -2rem;
+}
+
+.right-btn {
+  right: -2rem;
+}
+/* Enhanced card styles with hover effects */
+.grid-cards {
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  gap: 1rem;
+  padding: 0.5rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.grid-cards::-webkit-scrollbar {
+  display: none;
+}
+
+.card {
+  flex: 0 0 auto;
+  width: 160px;
+  background: none;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.card:hover {
+  transform: scale(1.1);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+}
+
+.card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+}
+
+.card-image {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  transition: filter 0.3s ease;
+}
+
+.card:hover .card-image {
+  filter: brightness(0.7);
+}
+
+.card-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+  padding: 1rem;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.card-content.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.card-title {
+  font-size: 0.9rem;
+  margin: 0 0 0.3rem 0;
+  color: #fff;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-date {
+  font-size: 0.75rem;
+  color: #aaa;
+  margin: 0 0 0.8rem 0;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.play-button {
+  background: rgba(255, 255, 255, 0.9);
+  color: #000;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.play-button:hover {
+  background: #fff;
+  transform: scale(1.05);
+}
+
+/* Ensure the entire card remains clickable */
+.card-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+}
+
+/* Hide buttons on mobile */
+@media (max-width: 768px) {
+  .carousel-section {
+    padding: 0 1rem;
+  }
+  
+  .carousel-btn {
+    display: none;
+  }
+  
+  .grid-cards {
+    padding: 0.5rem 0;
+  }
+}
+
+/* ===============================
+   Helpers
+=============================== */
+.aspect-video { aspect-ratio: 16 / 9; }
+.overflow-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

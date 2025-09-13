@@ -1,0 +1,201 @@
+/* ===============================
+   Watch Page Layout
+=============================== */
+
+.watch-page {
+  padding: 2rem 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  margin-top: 65px;
+  color: #fff;
+  font-family: "Inter", sans-serif;
+  background-color: #0f1725; /* ensure container has same bg */
+  min-height: 100vh;          /* make page full height */
+}
+
+.watch-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  background-color: transparent; /* avoid black overflow */
+}
+
+.watch-embed {
+  width: 100%;
+  position: relative;
+  padding-top: 56.25%; /* 16:9 aspect ratio */
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  background-color: #000; /* iframe fallback color */
+}
+
+.watch-poster img {
+  width: 80%;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  object-fit: cover;
+}
+
+.watch-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.watch-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #e0e0fe; /* Netflix red accent */
+  margin: 0;
+}
+
+.watch-overview {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #ccc;
+}
+
+.watch-embed iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 12px;
+}
+
+.watch-back {
+  margin-top: 2rem;
+  font-size: 0.9rem;
+  color: #aaa;
+}
+
+.watch-back a {
+  text-decoration: underline;
+  color: #fff;
+  transition: color 0.2s;
+}
+
+.watch-back a:hover {
+  color: #e50914;
+}
+
+/* ===============================
+   Responsive
+=============================== */
+
+@media (min-width: 768px) {
+  .watch-content {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .watch-poster {
+    flex: 1;
+    max-width: 200px;
+  }
+
+  .watch-info {
+    flex: 2;
+  }
+}
+
+/* ===============================
+   Styled Season & Episode Selectors
+=============================== */
+
+.tv-selectors {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.tv-selectors label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.875rem;
+  color: #ccc;
+  font-weight: 500;
+}
+
+.tv-selectors select {
+  background-color: #111;
+  color: #fff;
+  border: 2px solid #333;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+  min-width: 120px;
+}
+
+.tv-selectors select:hover {
+  border-color: #555;
+}
+
+.tv-selectors select:focus {
+  border-color: #e50914;
+  box-shadow: 0 0 6px rgba(229, 9, 20, 0.6);
+}
+
+/* Optional: subtle custom arrow for modern look */
+.tv-selectors select::-ms-expand {
+  display: none;
+}
+.tv-selectors select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg fill='white' height='10' viewBox='0 0 24 24' width='10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 12px;
+  padding-right: 28px; /* leave space for arrow */
+}
+
+/* Add to your existing MediaPage.css */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1rem;
+}
+
+.pagination-btn {
+  padding: 0.5rem 1rem;
+  background-color: #1B3B6F;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: #2D4F8B;
+}
+
+.pagination-btn:disabled {
+  background-color: #2D3748;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.pagination-info {
+  color: #B0BEC5;
+  font-weight: 500;
+}
+
+/* Responsive design for pagination */
+@media (max-width: 768px) {
+  .pagination {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
