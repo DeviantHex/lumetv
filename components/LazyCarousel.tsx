@@ -60,7 +60,7 @@ export default function LazyCarousel({
           if (type === "movie" && genreId) {
             data = await getMoviesByGenre(genreId, title, page);
           } else if (type === "tv") {
-            data = await getTVShows(page);
+            data = await getTVShows();
           }
           if (data?.results) results = [...results, ...data.results];
         }
