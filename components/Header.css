@@ -1,25 +1,25 @@
 /* components/Header.css */
 .header {
-    background-color: rgba(14, 19, 27, 0.674); /* Make it semi-transparent */
-    padding: 1.5rem 0;
-    padding-top: 10px;
-    border-bottom: 2px solid #1B3B6F;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-    position: fixed;
-    height: 30px;
-    width: 100%;
-    top: 0;
-    z-index: 99999999;
+  background: linear-gradient(to bottom, #000000, #181818); /* black → grey */
+  padding: 1rem 0;
+  padding-top: 15px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  position: fixed;
+  height: 30px;
+  width: 100%;
+  top: 0;
+  z-index: 99999999;
 
-    backdrop-filter: blur(10px); /* <-- Adds background blur */
-    -webkit-backdrop-filter: blur(10px); /* For Safari support */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
+
 
 
 .header-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 1=rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -30,7 +30,7 @@
   display: flex;
   left: -75px;
   position: relative;
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 800;
   color: #ffffff;
   letter-spacing: 2px;
@@ -153,7 +153,7 @@
   border-top-right-radius: 9999px;
   border-bottom-right-radius: 9999px;
   border: 1px solid;
-  background-color: #14112b;
+  background-color: #191919;
   border-color: #c3c3f4;
   color: #fff;
   font-weight: 500;
@@ -179,7 +179,7 @@
 
 /* Sign In button */
 .sign-in-btn {
-  background-color: #1B3B6F;
+  background-color: #1d1d1d;
   color: white;
   border-top-right-radius: 0 !important;
   border-bottom-right-radius: 0 !important;
@@ -194,9 +194,6 @@
   transition: 0.3s;
 }
 
-.sign-in-btn:hover {
-  background-color: #1b293d !important;
-}
 
 /* Dialog overlay */
 .dialog-overlay {
@@ -212,7 +209,7 @@
 
 /* Dialog box */
 .dialog {
-  background: rgba(14, 19, 27, 0.85);
+  background: rgba(11, 11, 11, 0.85);
   backdrop-filter: blur(15px);
   border: 1px solid #1B3B6F;
   padding: 2rem;

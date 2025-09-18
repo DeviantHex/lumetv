@@ -134,7 +134,7 @@ export default function Header() {
               }}
             />
             <button onClick={handleSearch}>Search</button>
-            <button className="sign-in-btn" onClick={() => setIsDialogOpen(true)}>Sign In</button>
+            <button className="sign-in-btn" onClick={() => setIsDialogOpen(true)}>Log In</button>
           </div>
         </div>
       </header>
