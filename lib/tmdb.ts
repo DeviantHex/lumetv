@@ -106,7 +106,14 @@ export const GENRES = {
   ACTION: 28,
   HORROR: 27,
   CRIME: 80,
-  // Add more as needed
+  COMEDY: 35,
+  ROMANCE: 10749,
+  SCIFI: 878,
+  FANTASY: 14,
+  THRILLER: 53,
+  ANIMATION: 16,
+  DOCUMENTARY: 99,
+  // add as many as you want from TMDB's genre list
 };
 
 // Search movies, TV shows, or both
@@ -125,7 +132,89 @@ export async function searchMulti(query: string) {
   }
 }
 
-export function getImageUrl(path?: string, size: string = "w500") {
-  if (!path) return "/fallback.jpg"; // fallback image if TMDB doesn't return one
+// lib/tmdb.ts
+
+export async function getRuntimeAndGenres(type: "movie" | "tv", id: number) {
+  try {
+    const res = await fetch(
+      `${TMDB_BASE_URL}/${type}/${id}?api_key=${TMDB_API_KEY}&language=en-US`
+    );
+    if (!res.ok) throw new Error(`Failed to fetch runtime for ${type}/${id}`);
+    const data = await res.json();
+
+    if (type === "movie") {
+      return {
+        runtime: data.runtime || null,
+        genres: data.genres?.map((g: any) => g.name) || [],
+        releaseDate: data.release_date || null,
+        rating: data.vote_average || null,
+      };
+    } else {
+      const runtime = Array.isArray(data.episode_run_time) && data.episode_run_time.length > 0
+        ? data.episode_run_time[0]
+        : null;
+
+      return {
+        runtime,
+        genres: data.genres?.map((g: any) => g.name) || [],
+        releaseDate: data.first_air_date || null,
+        rating: data.vote_average || null,
+      };
+    }
+  } catch (err) {
+    console.error("Failed to fetch runtime/genres:", err);
+    return { runtime: null, genres: [], releaseDate: null, rating: null };
+  }
+}
+
+// lib/tmdb.ts - Updated getTrailer function
+export async function getTrailer(type: "movie" | "tv", id: number) {
+  try {
+    const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+    
+    // Check if API key is available
+    if (!TMDB_API_KEY) {
+      console.error("TMDB API key is missing");
+      return null;
+    }
+    
+    const res = await fetch(
+      `${TMDB_BASE_URL}/${type}/${id}/videos?api_key=${TMDB_API_KEY}`
+    );
+    
+    if (!res.ok) {
+      console.error(`TMDB API error: ${res.status} ${res.statusText}`);
+      throw new Error(`Failed to fetch trailer for ${type}/${id}`);
+    }
+    
+    const data = await res.json();
+    
+    // Find the first trailer (usually the official one)
+    const trailer = data.results.find(
+      (video: any) => video.type === "Trailer" && video.site === "YouTube"
+    );
+    
+    return trailer ? trailer.key : null;
+  } catch (err) {
+    console.error("Failed to fetch trailer:", err);
+    return null;
+  }
+}
+
+export function getImageUrl(path?: string, size: string = "w780") {
+  if (!path) return "/fallback.jpg";
   return `https://image.tmdb.org/t/p/${size}${path}`;
+}
+
+// Fetch multiple pages and merge results
+export async function getMultiplePages<T>(
+  fetchFn: (page: number) => Promise<{ results: T[] }>,
+  pages: number = 2
+) {
+  const results: T[] = [];
+  for (let i = 1; i <= pages; i++) {
+    const data = await fetchFn(i);
+    results.push(...(data.results || []));
+  }
+  return results;
 }

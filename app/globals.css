@@ -197,7 +197,8 @@ footer {
   display: flex;
   align-items: center;
   overflow: hidden;
-  margin-bottom: -90px;
+  margin-bottom: -70px;
+  z-index: 0;
 }
 
 .hero-background {
@@ -312,38 +313,70 @@ footer {
 }
 
 /* ===============================
-   Carousel Sections & Buttons
+   Carousel Sections & Buttons - FIXED
 =============================== */
+
+.section-title{
+  margin-bottom: -10px;
+  font-size: 1.2rem;
+}
 .carousel-section {
   position: relative;
-  margin: 3rem 0;
+  margin: 1rem 0;
   padding: 0 2rem;
-  width: 100%;
-  box-sizing: border-box;
 }
 
-.section-title {
-  font-size: 1.4rem;
+.carousel-outer-container {
   position: relative;
-  margin: 0 0 0.2rem 1rem;
-  color: #fff;
-  font-weight: 600;
-  z-index: 999999 !important;
+  display: flex;
+  align-items: center;
 }
 
 .carousel-wrapper {
-  position: relative;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  width: 100%;
+  padding: 32px 25px;
+  margin: 0 -40px;
 }
 
-/* Carousel button styles */
+.carousel-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.grid-cards {
+  display: flex;
+  gap: 1rem;
+  padding: 0 10px;
+}
+
+.card {
+  flex: 0 0 auto;
+  width: 280px;
+  height: 160px;
+  border-radius: 25px;
+  position: relative;
+  transition: transform 0.25s ease-in, box-shadow 0.3s ease;
+  will-change: transform;
+  margin-right: 1rem;
+}
+
+.card:hover {
+  transform: scale(1.25);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  z-index: 20;
+}
+
 .carousel-btn {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 40px;
-  height: 40px;
-  font-size: 1.2rem;
-  z-index: 10;
+  width: 45px;
+  height: 45px;
+  font-size: 1.4rem;
   background: rgba(0, 0, 0, 0.7);
   color: #fff;
   border: none;
@@ -352,52 +385,24 @@ footer {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s ease;
-  z-index: 99999;
+  transition: background 0.2s ease, opacity 0.2s ease;
+  z-index: 1000;
+  opacity: 0.9;
 }
 
 .carousel-btn:hover {
   background: rgba(0, 0, 0, 0.9);
+  opacity: 1;
 }
 
 .left-btn {
-  left: -2rem;
+  left: -20px;
 }
 
 .right-btn {
-  right: -2rem;
-}
-/* Enhanced card styles with hover effects */
-.grid-cards {
-  display: flex;
-  overflow-x: auto;
-  scroll-behavior: smooth;
-  gap: 1rem;
-  padding: 0.5rem;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  right: -20px;
 }
 
-.grid-cards::-webkit-scrollbar {
-  display: none;
-}
-
-.card {
-  flex: 0 0 auto;
-  width: 160px;
-  background: none;
-  border-radius: 8px;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  position: relative;
-  z-index: 1;
-}
-
-.card:hover {
-  transform: scale(1.1);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
-  z-index: 10;
-}
 
 .card-link {
   display: block;
@@ -406,10 +411,65 @@ footer {
   height: 100%;
 }
 
+.card-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  overflow: hidden;
+  transition: transform 6s ease-in, box-shadow 0.3s ease;
+}
+
+.card:hover .card-inner {
+  transform: scale(1);   /* scale inner content */
+  box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+  z-index: 20;
+}
+
+.card-meta {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.5rem 0.7rem;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.card:hover .card-meta {
+  opacity: 1;
+}
+
+.card-runtime {
+  font-size: 0.8rem;
+  color: #ccc;
+}
+
+.card-play {
+  background: rgba(255,255,255,0.9);
+  color: #000;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.card-play:hover {
+  background: #fff;
+  transform: scale(1.05);
+}
+
+
 .card-image {
   width: 100%;
-  height: 240px;
-  object-fit: cover;
+  height: 100%;
+  object-fit: cover;     /* landscape images */
   transition: filter 0.3s ease;
 }
 
@@ -487,6 +547,68 @@ footer {
   z-index: 2;
 }
 
+/* Overlay inside card */
+.card-overlay {
+  position: absolute;
+  inset: 0; /* full cover */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.7rem;
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.8) 20%,
+    rgba(0,0,0,0.2) 70%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card:hover .card-overlay {
+  opacity: 1;
+}
+
+/* Overlay sections */
+.card-overlay-top,
+.card-overlay-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-rating,
+.card-date {
+  font-size: 0.75rem;
+  color: #ccc;
+}
+
+.card-play {
+  background: rgba(255,255,255,0.9);
+  color: #000;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.card-play:hover {
+  background: #fff;
+  transform: scale(1.05);
+}
+
+
 /* Hide buttons on mobile */
 @media (max-width: 768px) {
   .carousel-section {
@@ -502,6 +624,8 @@ footer {
   }
 }
 
+
+
 /* ===============================
    Helpers
 =============================== */
@@ -510,4 +634,25 @@ footer {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.skeleton-carousel {
+  display: flex;
+  gap: 1rem;
+  overflow: hidden;
+  padding: 2rem 10px;
+}
+
+.skeleton-card {
+  flex: 0 0 300px; /* match backdrop size */
+  height: 150px;
+  background: linear-gradient(90deg, #222 25%, #2c2c2c 50%, #222 75%);
+  background-size: 400% 100%;
+  animation: shimmer 2.5s ease-in-out infinite;
+  border-radius: 0.75rem;
+}
+
+@keyframes shimmer {
+  0% { background-position: -400% 0; }
+  100% { background-position: 400% 0; }
 }

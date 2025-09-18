@@ -1,40 +1,38 @@
 // app/page.tsx
 import React from "react";
-import { getTrending, getMoviesByGenre, getTVShows, GENRES, getImageUrl } from "@/lib/tmdb";
-import HorizontalCarousel from "@/components/HorizontalCarousel";
+import { getTrending, GENRES } from "@/lib/tmdb";
+import LazyCarousel from "@/components/LazyCarousel";
 import HeroSection from "@/components/HeroSection";
+import HorizontalCarousel from "@/components/HorizontalCarousel";
 
 export default async function Home() {
-  // Fetch all data in parallel
-  const [trending, actionMoviesData, horrorMoviesData, crimeMoviesData, tvShows] = 
-    await Promise.all([
-      getTrending().catch(() => []),
-      getMoviesByGenre(GENRES.ACTION, "Action").catch(() => ({ results: [] })),
-      getMoviesByGenre(GENRES.HORROR, "Horror").catch(() => ({ results: [] })),
-      getMoviesByGenre(GENRES.CRIME, "Crime").catch(() => ({ results: [] })),
-      getTVShows().catch(() => [])
-    ]);
-
-  // Extract just the results from the paginated responses
-  const actionMovies = actionMoviesData.results || [];
-  const horrorMovies = horrorMoviesData.results || [];
-  const crimeMovies = crimeMoviesData.results || [];
-
-  // Select a random trending item for the hero section
-  const randomTrending = trending.length > 0 
-    ? trending[Math.floor(Math.random() * trending.length)]
-    : null;
+  const trending = await getTrending().catch(() => []);
+  const randomTrending =
+    trending.length > 0
+      ? trending[Math.floor(Math.random() * trending.length)]
+      : null;
 
   return (
     <div className="main-content-wrapper">
-      {/* Hero Section with random trending item */}
       {randomTrending && <HeroSection item={randomTrending} />}
-      
+
+      {/* ✅ Use plain HorizontalCarousel for trending since data is already fetched */}
       <HorizontalCarousel items={trending} title="Trending Now" />
-      <HorizontalCarousel items={actionMovies} title="Action Movies" />
-      <HorizontalCarousel items={horrorMovies} title="Horror Movies" />
-      <HorizontalCarousel items={crimeMovies} title="Crime Thrillers" />
-      <HorizontalCarousel items={tvShows} title="Popular TV Series" />
+
+    {/* Movies */}
+    <LazyCarousel title="Action Movies" genreId={GENRES.ACTION} />
+    <LazyCarousel title="Horror Movies" genreId={GENRES.HORROR} />
+    <LazyCarousel title="Crime Thrillers" genreId={GENRES.CRIME} />
+    <LazyCarousel title="Comedy Movies" genreId={GENRES.COMEDY} />
+    <LazyCarousel title="Romance Movies" genreId={GENRES.ROMANCE} />
+    <LazyCarousel title="Sci-Fi Movies" genreId={GENRES.SCIFI} />
+    <LazyCarousel title="Fantasy Movies" genreId={GENRES.FANTASY} />
+    <LazyCarousel title="Thrillers" genreId={GENRES.THRILLER} />
+    <LazyCarousel title="Animated Films" genreId={GENRES.ANIMATION} />
+    <LazyCarousel title="Documentaries" genreId={GENRES.DOCUMENTARY} />
+
+    {/* TV */}
+    <LazyCarousel title="Popular TV Series" type="tv" />
     </div>
   );
 }

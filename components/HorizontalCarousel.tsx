@@ -1,5 +1,5 @@
 'use client';
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getImageUrl } from '@/lib/tmdb';
 
@@ -10,12 +10,37 @@ interface HorizontalCarouselProps {
 
 export default function HorizontalCarousel({ items, title }: HorizontalCarouselProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [hoveredItem, setHoveredItem] = useState<number | null>(null);
+  const [showLeftBtn, setShowLeftBtn] = useState(false);
+  const [showRightBtn, setShowRightBtn] = useState(true);
+
+  const checkScrollPosition = () => {
+    if (!containerRef.current) return;
+    
+    const { scrollLeft, scrollWidth, clientWidth } = containerRef.current;
+    setShowLeftBtn(scrollLeft > 0);
+    setShowRightBtn(scrollLeft < scrollWidth - clientWidth - 10);
+  };
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkScrollPosition);
+      checkScrollPosition(); // Initial check
+    }
+    
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', checkScrollPosition);
+      }
+    };
+  }, [items]);
 
   const scroll = (direction: "left" | "right") => {
     if (!containerRef.current) return;
-    const scrollAmount = 400;
-    containerRef.current.scrollBy({
+    const container = containerRef.current;
+    const scrollAmount = container.clientWidth * 0.75;
+    
+    container.scrollBy({
       left: direction === "left" ? -scrollAmount : scrollAmount,
       behavior: "smooth",
     });
@@ -27,56 +52,53 @@ export default function HorizontalCarousel({ items, title }: HorizontalCarouselP
     <div className="carousel-section">
       {title && <h2 className="section-title">{title}</h2>}
       
-      <div className="carousel-wrapper">
-        <button onClick={() => scroll("left")} className="carousel-btn left-btn">◀</button>
+      <div className="carousel-outer-container">
+        {/* Left button */}
+        {showLeftBtn && (
+          <button onClick={() => scroll("left")} className="carousel-btn left-btn">◀</button>
+        )}
 
-        <div ref={containerRef} className="grid-cards">
-          {items.map(item => {
-            if (!item) return null;
-            
-            const routeType = item.media_type || (item.title ? "movie" : "tv");
-            const title = item.title || item.name || "Untitled";
-            const isHovered = hoveredItem === item.id;
+        {/* Scrollable container with hidden overflow */}
+        <div ref={containerRef} className="carousel-wrapper">
+          <div className="grid-cards">
+            {items.map(item => {
+              if (!item) return null;
+              const routeType = item.media_type || (item.title ? "movie" : "tv");
+              const movieTitle = item.title || item.name || "Untitled";
 
-            return (
-              <div 
-                key={item.id} 
-                className="card"
-                onMouseEnter={() => setHoveredItem(item.id)}
-                onMouseLeave={() => setHoveredItem(null)}
-              >
-                <Link href={`/watch/${routeType}/${item.id}`} className="card-link">
-                  <img 
-                    src={getImageUrl(item.poster_path)} 
-                    alt={title} 
-                    className="card-image"
-                  />
-                  
-                  {/* Card content that appears on hover */}
-                  <div className={`card-content ${isHovered ? 'visible' : ''}`}>
-                    <h3 className="card-title">{title}</h3>
-                    <p className="card-date">
-                      {item.release_date || item.first_air_date || ""}
-                    </p>
-                    
-                    {/* Play button that appears on hover */}
-                    <div className="card-actions">
-                      <Link 
-                        href={`/watch/${routeType}/${item.id}`} 
-                        className="play-button"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        ▶ Play
-                      </Link>
+              return (
+                <div key={item.id} className="card">
+                  <div className="card-inner">
+                    <Link href={`/watch/${routeType}/${item.id}`} className="card-link">
+                      <img
+                        src={getImageUrl(item.backdrop_path || item.poster_path, "w780")}
+                        alt={movieTitle}
+                        className="card-image"
+                      />
+                    </Link>
+                    <div className="card-overlay">
+                      <div className="card-overlay-top">
+                        <span className="card-title">{movieTitle}</span>
+                        <span className="card-rating">⭐ {item.vote_average?.toFixed(1) || "N/A"}</span>
+                      </div>
+                      <div className="card-overlay-bottom">
+                        <span className="card-date">
+                          {item.release_date?.slice(0, 4) || item.first_air_date?.slice(0, 4)}
+                        </span>
+                        <Link href={`/watch/${routeType}/${item.id}`} className="card-play">▶ Play</Link>
+                      </div>
                     </div>
                   </div>
-                </Link>
-              </div>
-            );
-          })}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        <button onClick={() => scroll("right")} className="carousel-btn right-btn">▶</button>
+        {/* Right button */}
+        {showRightBtn && (
+          <button onClick={() => scroll("right")} className="carousel-btn right-btn">▶</button>
+        )}
       </div>
     </div>
   );
