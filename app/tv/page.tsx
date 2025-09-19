@@ -1,9 +1,17 @@
 // app/tv/page.tsx
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { getTVShowsByGenre, getPopularTVShows, getImageUrl } from '@/lib/tmdb'
+import { 
+  getFilteredTVShows,
+  getPopularTVShows, 
+  getTrendingTVShows, // Add this import
+  getImageUrl, 
+  SortOption,
+  FilterOptions
+} from '@/lib/tmdb'
+import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
 import './MediaPage.css'
 
 const TV_GENRES = [
@@ -25,76 +33,234 @@ const TV_GENRES = [
   { id: 37, name: 'Western' },
 ]
 
+const SORT_OPTIONS = [
+  { value: 'popularity.desc', label: 'Popularity Descending' },
+  { value: 'popularity.asc', label: 'Popularity Ascending' },
+  { value: 'first_air_date.desc', label: 'Air Date (Newest)' },
+  { value: 'first_air_date.asc', label: 'Air Date (Oldest)' },
+  { value: 'vote_average.desc', label: 'Rating (Highest)' },
+  { value: 'vote_average.asc', label: 'Rating (Lowest)' },
+  { value: 'name.asc', label: 'Name (A-Z)' },
+  { value: 'name.desc', label: 'Name (Z-A)' },
+]
+
+const LIST_TYPES = [
+  { value: 'popular', label: 'Popular' },
+  { value: 'trending', label: 'Trending' },
+  { value: 'discover', label: 'Discover' },
+]
+
+// Generate years from 1900 to current year + 1
+const CURRENT_YEAR = new Date().getFullYear();
+const YEARS = Array.from({ length: CURRENT_YEAR + 1 - 1900 }, (_, i) => CURRENT_YEAR - i);
+
+// Rating options from 0 to 10
+const RATINGS = Array.from({ length: 11 }, (_, i) => i);
+
+
 export default function TVPage() {
   const searchParams = useSearchParams()
   const [selectedGenre, setSelectedGenre] = useState<number | null>(null)
-  const [genreName, setGenreName] = useState<string>('All TV Shows')
+  const [selectedSort, setSelectedSort] = useState<SortOption>('popularity.desc')
+  const [selectedListType, setSelectedListType] = useState<string>('popular')
+  const [minRating, setMinRating] = useState<number | ''>('')
+  const [maxRating, setMaxRating] = useState<number | ''>('')
+  const [minYear, setMinYear] = useState<number | ''>('')
+  const [maxYear, setMaxYear] = useState<number | ''>('')
+  const [genreName, setGenreName] = useState<string>('')
   const [tvShows, setTVShows] = useState<any[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [isInitialLoad, setIsInitialLoad] = useState(true) // ← Add this
 
-  useEffect(() => {
-    // Reset to page 1 when genre changes
-    setCurrentPage(1)
-    
-    // Get genre from URL params if available
-    const genreParam = searchParams.get('genre')
-    const nameParam = searchParams.get('name')
-    
-    if (genreParam && nameParam) {
-      const genreId = parseInt(genreParam)
-      setSelectedGenre(genreId)
-      setGenreName(`${nameParam} TV Shows`)
-      fetchTVShows(genreId, 1)
-    } else {
-      // Default to all TV shows (no genre filter)
-      setSelectedGenre(null)
-      setGenreName('All TV Shows')
-      fetchTVShows(null, 1)
-    }
-  }, [searchParams])
+useEffect(() => {
+  const genreParam = searchParams.get('genre')
+  const nameParam = searchParams.get('name')
+  
+  if (genreParam && nameParam) {
+    const genreId = parseInt(genreParam)
+    setSelectedGenre(genreId)
+    setGenreName(`${nameParam} TV Shows`)
+  } else {
+    setSelectedGenre(null)
+    setGenreName('All TV Shows')
+  }
 
-  const fetchTVShows = async (genreId: number | null, page: number) => {
-    setLoading(true)
-    try {
-      let data
-      if (genreId) {
-        data = await getTVShowsByGenre(genreId, 'TV Shows', page)
+  setIsInitialLoad(false) // finish initial setup
+}, [searchParams])
+
+// Run only once after initial setup completes
+useEffect(() => {
+  if (!isInitialLoad) {
+    fetchTVShows(1, true)
+  }
+}, [isInitialLoad])
+
+// Run when filters change (but skip very first render)
+useEffect(() => {
+  if (isInitialLoad) return
+
+  setCurrentPage(1)
+  setTVShows([])
+  fetchTVShows(1, true)
+}, [
+  selectedSort, 
+  selectedListType, 
+  minRating, 
+  maxRating, 
+  minYear, 
+  maxYear,
+  selectedGenre
+])
+
+const buildFilters = (): FilterOptions => {
+  const filters: FilterOptions = {
+    sortBy: selectedSort,
+  };
+  
+  // Add genre filter if specified
+  if (selectedGenre !== null) {
+    filters.genreId = selectedGenre;
+  }
+  
+  // Add rating filters
+  if (minRating !== '') filters.minRating = Number(minRating);
+  if (maxRating !== '') filters.maxRating = Number(maxRating);
+  
+  // Add year filters
+  if (minYear !== '') filters.minYear = Number(minYear);
+  if (maxYear !== '') filters.maxYear = Number(maxYear);
+  
+  return filters;
+}
+
+
+const fetchTVShows = async (page: number, reset: boolean = false) => {
+  if (reset) setLoading(true)
+  else setLoadingMore(true)
+  
+  try {
+    let data
+    
+    if (selectedListType === 'trending') {
+      // Apply genre filter even to trending
+      if (selectedGenre) {
+        const filters = buildFilters();
+        data = await getFilteredTVShows(filters, page)
+      } else {
+        data = await getTrendingTVShows(page)
+      }
+    } else if (selectedListType === 'popular') {
+      // Apply genre filter even to popular
+      if (selectedGenre) {
+        const filters = buildFilters();
+        data = await getFilteredTVShows(filters, page)
       } else {
         data = await getPopularTVShows(page)
       }
-      
-      setTVShows(data.results || [])
-      setTotalPages(data.total_pages > 500 ? 500 : data.total_pages) // TMDB limits to 500 pages
-    } catch (error) {
-      console.error('Failed to fetch TV shows:', error)
-    } finally {
-      setLoading(false)
+    } else {
+      const filters = buildFilters();
+      data = await getFilteredTVShows(filters, page)
     }
+    
+    if (reset) {
+      setTVShows(data.results || [])
+    } else {
+      setTVShows(prev => [...prev, ...(data.results || [])])
+    }
+    
+    setTotalPages(data.total_pages > 500 ? 500 : data.total_pages)
+  } catch (error) {
+    console.error('Failed to fetch TV Shows:', error)
+  } finally {
+    setLoading(false)
+    setLoadingMore(false)
   }
+}
+
+  const loadMore = useCallback(() => {
+    if (currentPage < totalPages && !loadingMore) {
+      const nextPage = currentPage + 1
+      setCurrentPage(nextPage)
+      fetchTVShows(nextPage)
+    }
+  }, [currentPage, totalPages, loadingMore, selectedGenre, selectedSort, selectedListType, minRating, maxRating, minYear, maxYear])
+
+  const [isFetching] = useInfiniteScroll(loadMore, currentPage < totalPages && !loadingMore)
 
   const handleGenreChange = (genreId: number | null, name: string) => {
     setSelectedGenre(genreId)
     setGenreName(genreId ? `${name} TV Shows` : 'All TV Shows')
     setCurrentPage(1)
-    fetchTVShows(genreId, 1)
+    setTVShows([])
   }
 
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage)
-    fetchTVShows(selectedGenre, newPage)
-    // Scroll to top when changing pages
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+  const handleSortChange = (sortOption: SortOption) => {
+    setSelectedSort(sortOption)
+    setCurrentPage(1)
+    setTVShows([])
+  }
+
+  const handleListTypeChange = (listType: string) => {
+    setSelectedListType(listType)
+    setCurrentPage(1)
+    setTVShows([])
+  }
+
+  const handleRatingFilterChange = (type: 'min' | 'max', value: string) => {
+    const numValue = value === '' ? '' : Number(value);
+    if (type === 'min') {
+      setMinRating(numValue);
+    } else {
+      setMaxRating(numValue);
+    }
+    setCurrentPage(1);
+    setTVShows([]);
+  }
+
+  const handleYearFilterChange = (type: 'min' | 'max', value: string) => {
+    const numValue = value === '' ? '' : Number(value);
+    if (type === 'min') {
+      setMinYear(numValue);
+    } else {
+      setMaxYear(numValue);
+    }
+    setCurrentPage(1);
+    setTVShows([]);
+  }
+
+  const clearFilters = () => {
+    setMinRating('');
+    setMaxRating('');
+    setMinYear('');
+    setMaxYear('');
+    setSelectedSort('popularity.desc');
+    setSelectedGenre(null);
+    setGenreName('All TV Shows');
+    setCurrentPage(1);
+    setTVShows([]);
   }
 
   return (
     <div className="media-page">
       <div className="page-header">
-        <h1>{genreName}</h1>
         
         <div className="filters">
-          <div className="genre-filter">
+          <div className="filter-group">
+            <label>List Type:</label>
+            <select 
+              value={selectedListType} 
+              onChange={(e) => handleListTypeChange(e.target.value)}
+            >
+              {LIST_TYPES.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-group">
             <label>Filter by Genre:</label>
             <select 
               value={selectedGenre || ''} 
@@ -115,6 +281,81 @@ export default function TVPage() {
               ))}
             </select>
           </div>
+
+          {selectedListType === 'discover' && (
+            <>
+              <div className="filter-group">
+                <label>Min Rating:</label>
+                <select 
+                  value={minRating} 
+                  onChange={(e) => handleRatingFilterChange('min', e.target.value)}
+                >
+                  <option value="">Any Rating</option>
+                  {RATINGS.map(rating => (
+                    <option key={`min-${rating}`} value={rating}>{rating}+</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="filter-group">
+                <label>Max Rating:</label>
+                <select 
+                  value={maxRating} 
+                  onChange={(e) => handleRatingFilterChange('max', e.target.value)}
+                >
+                  <option value="">Any Rating</option>
+                  {RATINGS.map(rating => (
+                    <option key={`max-${rating}`} value={rating}>{rating}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="filter-group">
+                <label>From Year:</label>
+                <select 
+                  value={minYear} 
+                  onChange={(e) => handleYearFilterChange('min', e.target.value)}
+                >
+                  <option value="">Any Year</option>
+                  {YEARS.map(year => (
+                    <option key={`min-${year}`} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="filter-group">
+                <label>To Year:</label>
+                <select 
+                  value={maxYear} 
+                  onChange={(e) => handleYearFilterChange('max', e.target.value)}
+                >
+                  <option value="">Any Year</option>
+                  {YEARS.map(year => (
+                    <option key={`max-${year}`} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="filter-group">
+                <label>Sort By:</label>
+                <select 
+                  value={selectedSort} 
+                  onChange={(e) => handleSortChange(e.target.value as SortOption)}
+                >
+                  {SORT_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="filter-group">
+                <label>&nbsp;</label>
+                <button onClick={clearFilters} className="clear-filters-btn">
+                  Clear Filters
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -125,46 +366,42 @@ export default function TVPage() {
           <div className="media-grid">
             {tvShows.map(show => (
               <Link 
-                key={show.id} 
+                key={`${show.id}-${Math.random()}`} // Add random to ensure unique keys
                 href={`/watch/tv/${show.id}`}
                 className="media-card-link"
               >
                 <div className="media-card">
                   <img 
-                    src={getImageUrl(show.poster_path, "w300")} 
+                    src={getImageUrl(show.poster_path, "w300")} // Changed back to w300
                     alt={show.name} 
+                    onError={(e) => {
+                      e.currentTarget.src = '/fallback-poster.jpg';
+                    }}
                   />
                   <div className="media-info">
                     <h3>{show.name}</h3>
                     <p>{show.first_air_date?.split('-')[0]}</p>
+                    <div className="media-rating">
+                      <span>⭐ {show.vote_average?.toFixed(1)}</span>
+                    </div>
                   </div>
                 </div>
               </Link>
             ))}
           </div>
 
-          {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="pagination">
-              <button 
-                onClick={() => handlePageChange(currentPage - 1)} 
-                disabled={currentPage === 1}
-                className="pagination-btn"
-              >
-                Previous
-              </button>
-              
-              <span className="pagination-info">
-                Page {currentPage} of {totalPages}
-              </span>
-              
-              <button 
-                onClick={() => handlePageChange(currentPage + 1)} 
-                disabled={currentPage === totalPages}
-                className="pagination-btn"
-              >
-                Next
-              </button>
+          {(loadingMore || isFetching) && (
+            <div className="loading-more">Loading more TV shows...</div>
+          )}
+
+          {currentPage >= totalPages && tvShows.length > 0 && (
+            <div className="end-of-results">No more TV shows to load</div>
+          )}
+
+          {tvShows.length === 0 && !loading && (
+            <div className="no-results">
+              <h3>No TV shows found</h3>
+              <p>Try adjusting your filters to find more results.</p>
             </div>
           )}
         </>
