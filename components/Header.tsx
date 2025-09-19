@@ -81,21 +81,6 @@ export default function Header() {
               onMouseLeave={() => setShowMovieGenres(false)}
             >
               <Link href="/movie" className="nav-link">Movies</Link>
-              {showMovieGenres && (
-                <div className="genre-dropdown">
-                  <div className="genre-grid">
-                    {MOVIE_GENRES.map(genre => (
-                      <button
-                        key={genre.id}
-                        className="genre-item"
-                        onClick={() => navigateToGenre('movie', genre.id, genre.name)}
-                      >
-                        {genre.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
             <div
@@ -104,21 +89,6 @@ export default function Header() {
               onMouseLeave={() => setShowTVGenres(false)}
             >
               <Link href="/tv" className="nav-link">TV Shows</Link>
-              {showTVGenres && (
-                <div className="genre-dropdown">
-                  <div className="genre-grid">
-                    {TV_GENRES.map(genre => (
-                      <button
-                        key={genre.id}
-                        className="genre-item"
-                        onClick={() => navigateToGenre('tv', genre.id, genre.name)}
-                      >
-                        {genre.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           </nav>
 
