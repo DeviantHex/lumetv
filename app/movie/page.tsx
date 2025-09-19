@@ -66,7 +66,7 @@ export default function MoviePage() {
   const searchParams = useSearchParams()
   const [selectedGenre, setSelectedGenre] = useState<number | null>(null)
   const [selectedSort, setSelectedSort] = useState<SortOption>('popularity.desc')
-  const [selectedListType, setSelectedListType] = useState<string>('popular')
+  const [selectedListType, setSelectedListType] = useState<string>('discover')
   const [minRating, setMinRating] = useState<number | ''>('')
   const [maxRating, setMaxRating] = useState<number | ''>('')
   const [minYear, setMinYear] = useState<number | ''>('')
@@ -376,7 +376,7 @@ const fetchMovies = async (page: number, reset: boolean = false) => {
               >
                 <div className="media-card">
                   <img 
-                    src={getImageUrl(movie.poster_path, "w300")} 
+                    src={getImageUrl(movie.poster_path, "w780")} 
                     alt={movie.title} 
                     onError={(e) => {
                       e.currentTarget.src = '/fallback-poster.jpg';

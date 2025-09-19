@@ -62,7 +62,7 @@ export default function TVPage() {
   const searchParams = useSearchParams()
   const [selectedGenre, setSelectedGenre] = useState<number | null>(null)
   const [selectedSort, setSelectedSort] = useState<SortOption>('popularity.desc')
-  const [selectedListType, setSelectedListType] = useState<string>('popular')
+  const [selectedListType, setSelectedListType] = useState<string>('discover')
   const [minRating, setMinRating] = useState<number | ''>('')
   const [maxRating, setMaxRating] = useState<number | ''>('')
   const [minYear, setMinYear] = useState<number | ''>('')

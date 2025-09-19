@@ -190,7 +190,7 @@
   border-top-left-radius: 0 !important;
   border-bottom-left-radius: 0 !important;
   border: none;
-  border-left-color: #00b7ff;
+  border-left-color: #00b7ff !important;
   padding: 0.5rem 1rem !important;
   margin-left: 50px !important;
   margin-right: -100px;
