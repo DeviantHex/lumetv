@@ -1,17 +1,21 @@
 /* components/Header.css */
 .header {
-  background: linear-gradient(to bottom, #000000, #181818); /* black → grey */
+  background: #746ba3c9; /* semi-transparent dark for glass effect */
   padding: 1rem 0;
   padding-top: 15px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25); /* softer, deeper shadow */
   position: fixed;
-  height: 30px;
+  height: 35px; /* taller so blur looks nicer */
   width: 100%;
   top: 0;
-  z-index: 99999999;
-
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  z-index: 9999;
+  border-bottom: 3px solid rgba(234, 234, 252, 0.738); /* subtle separation */
+  
+  backdrop-filter: blur(8px); /* soft blur */
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom-left-radius: 85px;
+  border-bottom-right-radius: 85px;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
 
@@ -70,16 +74,16 @@
 }
 
 .nav-link {
-  color: #B0BEC5;
+  color: #eaeaea;
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 800;
   text-decoration: none;
   transition: color 0.2s ease;
   padding: 0.5rem 0;
 }
 
 .nav-link:hover {
-  color: #4FC3F7;
+  color: #c5c7ff;
 }
 
 /* Genre dropdown */
@@ -134,7 +138,7 @@
   padding: 8px 14px;
   border: 1px solid #00b7ff;
   border-radius: 9999px;
-  background-color: #f7f5ff;
+  background-color: #272530;
   color: #fff;
   outline: none;
   font-size: 0.95rem;
@@ -146,6 +150,10 @@
   border: 1px solid #00b7ff;
   color: black;
   box-shadow: 0 0 8px rgba(229, 9, 20, 0.6);
+}
+
+.nav-right input::placeholder {
+  color: rgba(222, 222, 222, 0.571);
 }
 
 /* Search button */

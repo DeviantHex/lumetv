@@ -1,7 +1,8 @@
+// WatchPage.tsx - USING EXACT HERO SECTION STRUCTURE
 import React from "react";
-import { headers } from "next/headers"; // ✅ app router way
+import { headers } from "next/headers";
 import { getDetails, getImageUrl } from "@/lib/tmdb";
-import TVControls from "./TVControls"; // Client component
+import TVControls from "./TVControls";
 import "./watch.css";
 
 interface WatchPageProps {
@@ -11,19 +12,15 @@ interface WatchPageProps {
 export default async function WatchPage({ params }: WatchPageProps) {
   const { type, id } = params;
 
-  // ✅ Get client IP
+  // Get client IP
   const headersList = headers();
   const forwardedFor = headersList.get("x-forwarded-for");
-  const ip =
-    forwardedFor?.split(",")[0] ||
-    headersList.get("x-real-ip") ||
-    "0.0.0.0";
+  const ip = forwardedFor?.split(",")[0] || headersList.get("x-real-ip") || "0.0.0.0";
 
-  // ✅ Geo lookup
+  // Geo lookup
   let isItalian = false;
   try {
     const res = await fetch(`https://ipapi.co/${ip}/json/`, {
-      // force server-side fetch
       cache: "no-store",
     });
     const data = await res.json();
@@ -32,45 +29,107 @@ export default async function WatchPage({ params }: WatchPageProps) {
     console.error("GeoIP lookup failed:", err);
   }
 
-  // ✅ Metadata
+  // Metadata
   const details = await getDetails(type === "movie" ? "movie" : "tv", id);
   const title = details?.title || details?.name || "Title";
   const overview = details?.overview || "";
   const poster = getImageUrl(details?.poster_path, "w780");
+  const backdrop = getImageUrl(details?.backdrop_path, "w1280");
+  const rating = details?.vote_average ? Math.round(details.vote_average * 10) / 10 : null;
+  const releaseYear = details?.release_date 
+    ? new Date(details.release_date).getFullYear() 
+    : details?.first_air_date 
+    ? new Date(details.first_air_date).getFullYear() 
+    : null;
 
-  // ✅ Embed URL
+  // Embed URL
   let embedUrl = `https://vixsrc.to/${type}/${id}?primaryColor=E50914&autoplay=false`;
   if (isItalian) {
     embedUrl += "&lang=it";
   }
 
   return (
-    <div className="watch-page container">
-      <div className="watch-content">
-        {/* Poster */}
-        <div className="watch-poster">
-          <img src={poster} alt={title} />
+    <div className="watch-page">
+      {/* Use EXACT same structure as home page HeroSection */}
+      <div className="hero-section">
+        <div 
+          className="hero-background"
+          style={{ 
+            backgroundImage: `url(${backdrop})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center'
+          }}
+        >
+          <div className="hero-overlay"></div>
+          <div className="hero-vignette"></div>
         </div>
-
-        {/* Info & Embed */}
-        <div className="watch-info">
-          {overview && <p className="watch-overview">{overview}</p>}
-
-          {type === "tv" && details?.seasons?.length > 0 && (
-            <div className="tv-selectors">
-              <TVControls tvId={id} seasons={details.seasons} />
+        
+        {/* Content area - this will contain your watch page content */}
+        <div className="watch-content">
+          <div className="media-container">
+            {/* Poster */}
+            <div className="poster-section">
+              <div className="poster-frame">
+                <img src={poster} alt={title} className="poster-image" />
+              </div>
             </div>
-          )}
 
-          {type === "movie" && (
-            <div className="watch-embed">
-              <iframe
-                src={embedUrl}
-                allowFullScreen
-                title={`${title} player`}
-              ></iframe>
+            {/* Content */}
+            <div className="content-section">
+              {/* Title and Overview Row */}
+              <div className="title-overview-row">
+                <div className="title-section">
+                  <h1 className="media-title">{title}</h1>
+                  {releaseYear && <span className="release-year">({releaseYear})</span>}
+                  
+                  <div className="media-meta">
+                    {rating && (
+                      <div className="rating-badge">
+                        <span className="rating-icon">⭐</span>
+                        <span className="rating-value">{rating}/10</span>
+                      </div>
+                    )}
+                    {details?.runtime && (
+                      <div className="runtime">
+                        {Math.floor(details.runtime / 60)}h {details.runtime % 60}m
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Overview now beside title */}
+                {overview && (
+                  <div className="overview-section">
+                    <h3 className="section-title">Overview</h3>
+                    <p className="media-overview">{overview}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Player Section - Now takes full width below title/overview */}
+              <div className="player-section">
+                {type === "tv" ? (
+                  <div className="tv-controls-wrapper">
+                    <TVControls 
+                      tvId={id} 
+                      seasons={details?.seasons || []} 
+                    />
+                  </div>
+                ) : (
+                  <div className="movie-player">
+                    <div className="player-container">
+                      <iframe
+                        src={embedUrl}
+                        allowFullScreen
+                        title={`${title} player`}
+                        className="media-player"
+                      ></iframe>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>

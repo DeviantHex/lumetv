@@ -1,10 +1,10 @@
-// app/search/page.tsx
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { searchMulti, getImageUrl } from '@/lib/tmdb'
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll'
+import { checkMultipleOnVixsrc } from '@/lib/vixsrc'
 import './MediaPage.css'
 
 interface SearchPageProps {
@@ -16,24 +16,44 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
   const [results, setResults] = useState<any[]>([])
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [loading, setLoading] = useState(false)
 
-  // Load more results
   const loadMore = useCallback(async () => {
-    if (!query || page > totalPages) return
+    if (!query || page > totalPages || loading) return
+    setLoading(true)
 
     try {
       const data = await searchMulti(query, page)
-      setResults((prev) => [...prev, ...data.results])
+      let newResults = data.results || []
+
+      // Filter via Vixsrc availability
+      const idsByType: Record<string, number[]> = { movie: [], tv: [] }
+      newResults.forEach(item => {
+        if (item.media_type === 'movie') idsByType.movie.push(item.id)
+        if (item.media_type === 'tv') idsByType.tv.push(item.id)
+      })
+
+      const availableMovies = await checkMultipleOnVixsrc('movie', idsByType.movie)
+      const availableTVs = await checkMultipleOnVixsrc('tv', idsByType.tv)
+
+      newResults = newResults.filter(item =>
+        (item.media_type === 'movie' && availableMovies.includes(item.id)) ||
+        (item.media_type === 'tv' && availableTVs.includes(item.id))
+      )
+
+      setResults(prev => [...prev, ...newResults])
       setTotalPages(data.total_pages)
-      setPage((prev) => prev + 1)
+      setPage(prev => prev + 1)
     } catch (err) {
       console.error('Search failed:', err)
+    } finally {
+      setLoading(false)
     }
-  }, [query, page, totalPages])
+  }, [query, page, totalPages, loading])
 
-  const [isFetching] = useInfiniteScroll(loadMore, page <= totalPages)
+  const [isFetching] = useInfiniteScroll(loadMore, page <= totalPages && !loading)
 
-  // Initial load (page 1)
+  // Initial load
   useEffect(() => {
     if (!query) return
     setResults([])
@@ -41,13 +61,33 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
     setTotalPages(1)
 
     const fetchFirstPage = async () => {
+      setLoading(true)
       try {
         const data = await searchMulti(query, 1)
-        setResults(data.results)
+        let newResults = data.results || []
+
+        // Filter via Vixsrc availability
+        const idsByType: Record<string, number[]> = { movie: [], tv: [] }
+        newResults.forEach(item => {
+          if (item.media_type === 'movie') idsByType.movie.push(item.id)
+          if (item.media_type === 'tv') idsByType.tv.push(item.id)
+        })
+
+        const availableMovies = await checkMultipleOnVixsrc('movie', idsByType.movie)
+        const availableTVs = await checkMultipleOnVixsrc('tv', idsByType.tv)
+
+        newResults = newResults.filter(item =>
+          (item.media_type === 'movie' && availableMovies.includes(item.id)) ||
+          (item.media_type === 'tv' && availableTVs.includes(item.id))
+        )
+
+        setResults(newResults)
         setTotalPages(data.total_pages)
         setPage(2)
       } catch (err) {
         console.error('Search failed:', err)
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -62,7 +102,7 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
         </h1>
       </div>
 
-      {results.length === 0 ? (
+      {results.length === 0 && !loading ? (
         <div className="no-results">
           <h3>No results found</h3>
           <p>Try a different keyword or check your spelling.</p>
@@ -99,10 +139,10 @@ export default function SearchPage({ searchParams }: SearchPageProps) {
             })}
           </div>
 
-          {isFetching && (
+          {(loading || isFetching) && (
             <div className="loading-more">Loading more results…</div>
           )}
-          {page > totalPages && (
+          {page > totalPages && results.length > 0 && (
             <div className="end-of-results">End of search results</div>
           )}
         </>

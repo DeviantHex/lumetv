@@ -43,13 +43,9 @@ html::-webkit-scrollbar-corner {
 
 /* For Firefox */
 html {
+  scroll-behavior: auto; /* important to avoid fighting JS */
   scrollbar-width: thin; /* Options: auto, thin, none */
   scrollbar-color: #00f0ff #141313; /* thumb track */
-}
-
-/* Optional: Smooth scrolling for the entire page */
-html {
-  scroll-behavior: smooth;
 }
 
 /* ===============================
@@ -59,7 +55,7 @@ html, body, #__next {
   margin: 0;
   padding: 0;
   font-family: Inter, sans-serif;
-  background: #111111;
+  background: #000000;
   color: var(--text);
   width: 100%;
   overflow-x: hidden; /* Prevent horizontal scroll */
@@ -85,7 +81,6 @@ h1, h2, h3, h4, h5, h6 {
 =============================== */
 header {
   background-color: var(--header-bg);
-  border-bottom: 1px solid #222;
   padding: 1rem 0;
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
@@ -130,11 +125,14 @@ overflow: auto;
    Footer
 =============================== */
 footer {
+  position: relative;
   background-color: #161616; /* dark background */
-  border-top: 1px solid #222;
-  border-radius: 15px;
+  border-top: 3px solid #353535;
+  border-top-left-radius: 200px;
+  border-top-right-radius: 200px;
   padding: 2rem 1rem 2rem; /* adjust bottom padding */
   width: 100%;
+  z-index: 10;
   text-align: center;
   color: #aaa; /* muted text */
   font-family: "Inter", sans-serif;
@@ -191,7 +189,7 @@ footer {
 =============================== */
 .hero-section {
   position: relative;
-  height: 80vh;
+  height: 100vh;
   min-height: 500px;
   width: 100%;
   display: flex;
@@ -323,8 +321,7 @@ footer {
 }
 .carousel-section {
   position: relative;
-  margin: 1rem 0;
-  padding: 0 2rem;
+  padding: 0 1.5rem;
 }
 
 .carousel-outer-container {
@@ -340,8 +337,8 @@ footer {
   scrollbar-width: none;
   -ms-overflow-style: none;
   width: 100%;
-  padding: 32px 35px;
-  margin: 0 -40px;
+  padding: 30px 20px;
+  margin: 0 -15px;
 }
 
 .carousel-wrapper::-webkit-scrollbar {
@@ -350,9 +347,9 @@ footer {
 
 .grid-cards {
   display: flex;
-  gap: 0;
+  gap: 2px;
   padding: 0 10px;
-  margin-bottom: -10px;
+  margin-bottom: -5px;
 }
 
 .card {
@@ -376,13 +373,14 @@ footer {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 45px;
-  height: 45px;
-  font-size: 1.4rem;
-  background: rgba(0, 0, 0, 0.7);
-  color: #fff;
+  width: 75px;
+  height: 75px;
+  font-size: 3rem;
+  background: rgba(0, 0, 0, 0.777);
+  color: #ffffffc9;
   border: none;
-  border-radius: 50%;
+  border-top-left-radius: 30px;
+  border-bottom-left-radius: 30px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -399,6 +397,12 @@ footer {
 
 .left-btn {
   left: -25px;
+  background: rgba(0, 0, 0, 0.777);  border: none;
+  border-radius: none;
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  border-top-right-radius: 30px;
+  border-bottom-right-radius: 30px;
 }
 
 .right-btn {
@@ -651,7 +655,7 @@ footer {
   border-radius: 20px;
   background: linear-gradient(90deg, #222 25%, #2c2c2c 50%, #222 75%);
   background-size: 400% 100%;
-  animation: shimmer 2.5s ease-in-out infinite;
+  animation: shimmer 3s ease-in-out infinite;
   border-radius: 0.75rem;
 }
 

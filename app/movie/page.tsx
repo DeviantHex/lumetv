@@ -1,6 +1,7 @@
 // app/movie/page.tsx
 'use client'
 import React, { useState, useEffect, useCallback } from 'react'
+import { checkMultipleOnVixsrc } from '@/lib/vixsrc' // your existing helper
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { 
@@ -141,47 +142,36 @@ const buildFilters = (): FilterOptions => {
 }
 
 const fetchMovies = async (page: number, reset: boolean = false) => {
-  if (reset) setLoading(true)
-  else setLoadingMore(true)
-  
+  if (reset) setLoading(true);
+  else setLoadingMore(true);
+
   try {
-    let data
-    
-    if (selectedListType === 'trending') {
-      // Apply genre filter even to trending
-      if (selectedGenre) {
-        const filters = buildFilters();
-        data = await getFilteredMovies(filters, page)
-      } else {
-        data = await getTrendingMovies(page)
-      }
-    } else if (selectedListType === 'popular') {
-      // Apply genre filter even to popular
-      if (selectedGenre) {
-        const filters = buildFilters();
-        data = await getFilteredMovies(filters, page)
-      } else {
-        data = await getPopularMovies(page)
-      }
-    } else {
-      const filters = buildFilters();
-      data = await getFilteredMovies(filters, page)
+    let data = selectedListType === "trending"
+      ? selectedGenre ? await getFilteredMovies(buildFilters(), page) : await getTrendingMovies(page)
+      : selectedListType === "popular"
+      ? selectedGenre ? await getFilteredMovies(buildFilters(), page) : await getPopularMovies(page)
+      : await getFilteredMovies(buildFilters(), page);
+
+    let results = data.results || [];
+
+    if (results.length > 0) {
+      const movieIds = results.map(m => m.id);
+
+      // Pass a callback to stream available movies
+      await checkMultipleOnVixsrc("movie", movieIds, (availableIds) => {
+        const filtered = results.filter(movie => availableIds.includes(movie.id));
+        setMovies(prev => [...prev, ...filtered]);
+      });
     }
-    
-    if (reset) {
-      setMovies(data.results || [])
-    } else {
-      setMovies(prev => [...prev, ...(data.results || [])])
-    }
-    
-    setTotalPages(data.total_pages > 500 ? 500 : data.total_pages)
+
+    setTotalPages(data.total_pages > 500 ? 500 : data.total_pages);
   } catch (error) {
-    console.error('Failed to fetch movies:', error)
+    console.error("Failed to fetch movies:", error);
   } finally {
-    setLoading(false)
-    setLoadingMore(false)
+    setLoading(false);
+    setLoadingMore(false);
   }
-}
+};
 
   const loadMore = useCallback(() => {
     if (currentPage < totalPages && !loadingMore) {
@@ -363,40 +353,42 @@ const fetchMovies = async (page: number, reset: boolean = false) => {
         </div>
       </div>
 
-      {loading ? (
-        <div className="loading">Loading...</div>
-      ) : (
-        <>
-          <div className="media-grid">
-            {movies.map(movie => (
-              <Link 
-                key={`${movie.id}-${Math.random()}`} // Add random to ensure unique keys
-                href={`/watch/movie/${movie.id}`}
-                className="media-card-link"
-              >
-                <div className="media-card">
-                  <img 
-                    src={getImageUrl(movie.poster_path, "w780")} 
-                    alt={movie.title} 
-                    onError={(e) => {
-                      e.currentTarget.src = '/fallback-poster.jpg';
-                    }}
-                  />
-                  <div className="media-info">
-                    <h3>{movie.title}</h3>
-                    <p>{movie.release_date?.split('-')[0]}</p>
-                    <div className="media-rating">
-                      <span>⭐ {movie.vote_average?.toFixed(1)}</span>
-                    </div>
+    {loading ? (
+      <div className="spinner-container">
+        <div className="spinner"></div>
+      </div>
+    ) : (
+      <>
+        <div className="media-grid">
+          {movies.map(movie => (
+            <Link 
+              key={`${movie.id}-${Math.random()}`} 
+              href={`/watch/movie/${movie.id}`}
+              className="media-card-link"
+            >
+              <div className="media-card">
+                <img 
+                  src={getImageUrl(movie.poster_path, "w780")} 
+                  alt={movie.title} 
+                  onError={(e) => { e.currentTarget.src = '/fallback-poster.jpg'; }}
+                />
+                <div className="media-info">
+                  <h3>{movie.title}</h3>
+                  <p>{movie.release_date?.split('-')[0]}</p>
+                  <div className="media-rating">
+                    <span>⭐ {movie.vote_average?.toFixed(1)}</span>
                   </div>
                 </div>
-              </Link>
-            ))}
-          </div>
+              </div>
+            </Link>
+          ))}
+        </div>
 
-          {(loadingMore || isFetching) && (
-            <div className="loading-more">Loading more movies...</div>
-          )}
+        {(loadingMore || isFetching) && (
+          <div className="spinner-container small">
+            <div className="spinner"></div>
+          </div>
+        )}
 
           {currentPage >= totalPages && movies.length > 0 && (
             <div className="end-of-results">No more movies to load</div>

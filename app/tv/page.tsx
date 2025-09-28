@@ -2,6 +2,7 @@
 'use client'
 import React, { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { checkMultipleOnVixsrc } from '@/lib/vixsrc' // your existing helper
 import Link from 'next/link'
 import { 
   getFilteredTVShows,
@@ -138,47 +139,51 @@ const buildFilters = (): FilterOptions => {
 
 
 const fetchTVShows = async (page: number, reset: boolean = false) => {
-  if (reset) setLoading(true)
-  else setLoadingMore(true)
-  
+  if (reset) setLoading(true);
+  else setLoadingMore(true);
+
   try {
-    let data
-    
+    let data;
+
     if (selectedListType === 'trending') {
-      // Apply genre filter even to trending
       if (selectedGenre) {
         const filters = buildFilters();
-        data = await getFilteredTVShows(filters, page)
+        data = await getFilteredTVShows(filters, page);
       } else {
-        data = await getTrendingTVShows(page)
+        data = await getTrendingTVShows(page);
       }
     } else if (selectedListType === 'popular') {
-      // Apply genre filter even to popular
       if (selectedGenre) {
         const filters = buildFilters();
-        data = await getFilteredTVShows(filters, page)
+        data = await getFilteredTVShows(filters, page);
       } else {
-        data = await getPopularTVShows(page)
+        data = await getPopularTVShows(page);
       }
     } else {
       const filters = buildFilters();
-      data = await getFilteredTVShows(filters, page)
+      data = await getFilteredTVShows(filters, page);
     }
-    
-    if (reset) {
-      setTVShows(data.results || [])
-    } else {
-      setTVShows(prev => [...prev, ...(data.results || [])])
+
+    const results = data.results || [];
+
+    if (results.length > 0) {
+      const tvIds = results.map(tv => tv.id);
+
+      // Use Vixsrc helper to filter available shows
+      await checkMultipleOnVixsrc('tv', tvIds, (availableIds) => {
+        const filtered = results.filter(tv => availableIds.includes(tv.id));
+        setTVShows(prev => reset ? filtered : [...prev, ...filtered]);
+      });
     }
-    
-    setTotalPages(data.total_pages > 500 ? 500 : data.total_pages)
+
+    setTotalPages(data.total_pages > 500 ? 500 : data.total_pages);
   } catch (error) {
-    console.error('Failed to fetch TV Shows:', error)
+    console.error('Failed to fetch TV Shows:', error);
   } finally {
-    setLoading(false)
-    setLoadingMore(false)
+    setLoading(false);
+    setLoadingMore(false);
   }
-}
+};
 
   const loadMore = useCallback(() => {
     if (currentPage < totalPages && !loadingMore) {
@@ -359,39 +364,43 @@ const fetchTVShows = async (page: number, reset: boolean = false) => {
         </div>
       </div>
 
-      {loading ? (
-        <div className="loading">Loading...</div>
+            {loading ? (
+        <div className="spinner-container">
+          <div className="spinner"></div>
+        </div>
       ) : (
         <>
-          <div className="media-grid">
-            {tvShows.map(show => (
-              <Link 
-                key={`${show.id}-${Math.random()}`} // Add random to ensure unique keys
-                href={`/watch/tv/${show.id}`}
-                className="media-card-link"
-              >
-                <div className="media-card">
-                  <img 
-                    src={getImageUrl(show.poster_path, "w300")} // Changed back to w300
-                    alt={show.name} 
-                    onError={(e) => {
-                      e.currentTarget.src = '/fallback-poster.jpg';
-                    }}
-                  />
-                  <div className="media-info">
-                    <h3>{show.name}</h3>
-                    <p>{show.first_air_date?.split('-')[0]}</p>
-                    <div className="media-rating">
-                      <span>⭐ {show.vote_average?.toFixed(1)}</span>
+            <div className="media-grid">
+              {tvShows.map(show => (
+                <Link 
+                  key={`${show.id}-${Math.random()}`} // Add random to ensure unique keys
+                  href={`/watch/tv/${show.id}`}
+                  className="media-card-link"
+                >
+                  <div className="media-card">
+                    <img 
+                      src={getImageUrl(show.poster_path, "w300")} // Changed back to w300
+                      alt={show.name} 
+                      onError={(e) => {
+                        e.currentTarget.src = '/fallback-poster.jpg';
+                      }}
+                    />
+                    <div className="media-info">
+                      <h3>{show.name}</h3>
+                      <p>{show.first_air_date?.split('-')[0]}</p>
+                      <div className="media-rating">
+                        <span>⭐ {show.vote_average?.toFixed(1)}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
+                </Link>
             ))}
           </div>
 
           {(loadingMore || isFetching) && (
-            <div className="loading-more">Loading more TV shows...</div>
+            <div className="spinner-container small">
+              <div className="spinner"></div>
+            </div>
           )}
 
           {currentPage >= totalPages && tvShows.length > 0 && (
